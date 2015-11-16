@@ -1,0 +1,16 @@
+{
+  "name": "idam-checker",
+  "version": "1.0.0",
+  "description": "Check whether service is 'live'",
+  "main": "service-checker.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Arvin Wiyono",
+  "dependencies": {
+  	"https": "*",
+  	"node-hipchat": "*",
+    "follow-redirects": "*",
+    "querystring": "*"
+  }
+}
