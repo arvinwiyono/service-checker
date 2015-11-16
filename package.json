@@ -9,7 +9,6 @@
   "author": "Arvin Wiyono",
   "dependencies": {
   	"https": "*",
-  	"node-hipchat": "*",
     "follow-redirects": "*",
     "querystring": "*"
   }

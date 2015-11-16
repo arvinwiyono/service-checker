@@ -6,7 +6,7 @@ exports.handler = function(event, context){
 	// Define URL
 	var url = 'dev.login.myob.com';
 
-	var requestType = event.request;
+	var requestType = event.request_type;
 	switch(requestType){
 		case 'get':
 			hitLoginPage(url);
@@ -15,6 +15,8 @@ exports.handler = function(event, context){
 		case 'post':
 			getAccessToken(url);
 			break;
+		default:
+			context.fail(constructGeneralError("ERR: 'request_type' IS NOT SUPPORTED OR NOT PROVIDED!"));
 	}
 
 // ****************************************************************** //
@@ -33,17 +35,18 @@ exports.handler = function(event, context){
 			//Extract response
 			var status = response.statusCode;
 			
-			//Analyze response
-			console.log("GET STATUS CODE: " + status)
-			if(status == 404){
-				response.on('data', function(chunk){
-				  console.log("RESPONSE BODY\n" + chunk);
-				});
-				context.fail("ERROR: Service is down!");
-			}
-			else{
-				context.succeed("Service responds gracefully!");
-			}
+			response.on('data', function(chunk){
+			 	var body = '';
+			 	body += chunk;
+			 	var returned_value = JSON.stringify({status_code: status});
+			 	if(status != 200){
+			 		console.log("ERR: " + loginSetting.host + loginSetting.path + " IS NOT RESPONDING!");
+			 		context.fail(returned_value);
+			 	}
+			 	else{
+			 		context.succeed(returned_value);
+			 	}
+			});
 		};
 
 		var loginRequest = https.get(loginSetting, loginCallback).on('error', function(err){
@@ -54,7 +57,6 @@ exports.handler = function(event, context){
 
 // ****************************************************************** //
 	
-
 	function getAccessToken(url){
 		//Accesss token request setup
 		var tokenPath = '/common/oauth2/token';
@@ -77,21 +79,19 @@ exports.handler = function(event, context){
 		// Getting access token
 		var getTokenCallback = function(response){
 			console.log("Sending HTTPS /POST request to " + url + tokenPath + " to get client access token");
-			var token = '';
+			
 			response.on('data', function(chunk){
 				try{
-					token += JSON.parse(chunk).access_token;
+					var token = JSON.parse(chunk).access_token;
+					if(token){
+						context.succeed(JSON.stringify({status: response.statusCode, access_token: (token.substring(0,20)+"...")}));
+					}
+					else{
+						context.fail("ERR: NO ACCESS TOKEN RETURNED!");
+					}
 				}
 				catch (e){
 					context.fail(e);
-				}
-			});
-			response.on('end', function(){
-				if(token){
-					context.succeed("ACCESS TOKEN IS SUCCESSFULLY OBTAINED:\n" + token);
-				}
-				else{
-					context.fail("NO ACCESS TOKEN RETURNED!");
 				}
 			});
 			response.on('error', function(err){
