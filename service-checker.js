@@ -8,15 +8,15 @@ exports.handler = function(event, context){
 
 	var requestType = event.request_type;
 	switch(requestType){
-		case 'get':
+		case 'login_page':
 			hitLoginPage(url);
 			break;
 
-		case 'post':
+		case 'access_token':
 			getAccessToken(url);
 			break;
 		default:
-			context.fail(constructGeneralError("ERR: 'request_type' IS NOT SUPPORTED OR NOT PROVIDED!"));
+			context.fail("ERR: 'request_type' IS NOT SUPPORTED OR NOT PROVIDED!");
 	}
 
 // ****************************************************************** //
@@ -50,6 +50,7 @@ exports.handler = function(event, context){
 		};
 
 		var loginRequest = https.get(loginSetting, loginCallback).on('error', function(err){
+			// Return error if host url is not found
 			context.fail(err);
 		});
 		loginRequest.end();
@@ -81,17 +82,19 @@ exports.handler = function(event, context){
 			console.log("Sending HTTPS /POST request to " + url + tokenPath + " to get client access token");
 			
 			response.on('data', function(chunk){
+				var token = '';
+				var status = response.statusCode;
 				try{
-					var token = JSON.parse(chunk).access_token;
-					if(token){
-						context.succeed(JSON.stringify({status: response.statusCode, access_token: (token.substring(0,20)+"...")}));
-					}
-					else{
-						context.fail("ERR: NO ACCESS TOKEN RETURNED!");
-					}
+					token += JSON.parse(chunk).access_token;
 				}
 				catch (e){
-					context.fail(e);
+					console.log("WARNING: CANNOT PARSE ACCESS TOKEN!");
+				}
+				if(token && status == 200){
+					context.succeed(JSON.stringify({status: status, access_token: (token.substring(0,20)+"...")}));
+				}
+				else{
+					context.fail(JSON.stringify({status: status, message: "ERR: NO ACCESS TOKEN RETURNED!"}));
 				}
 			});
 			response.on('error', function(err){
@@ -100,11 +103,11 @@ exports.handler = function(event, context){
 		};
 
 		var getTokenRequest = https.request(getAccessTokenSetting, getTokenCallback).on('error', function(err){
+			// Return error if host url is not found
 			context.fail(err);
 		});
 
 		getTokenRequest.write(messageBody);
 		getTokenRequest.end();
 	};
-
 };
