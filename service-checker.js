@@ -21,6 +21,7 @@ exports.handler = function(event, context){
 
 // ****************************************************************** //
 	function hitLoginPage(url){
+		// Request setup
 		var loginPath = '/account/login';	
 		var loginSetting = {
 			host: url,
@@ -28,7 +29,6 @@ exports.handler = function(event, context){
 			port: '443'
 		};
 		
-		//Hitting login page
 		var loginCallback = function(response){
 			console.log("Sending HTTPS /GET request to " + url + loginPath);
 			
@@ -49,6 +49,7 @@ exports.handler = function(event, context){
 			});
 		};
 
+		//Hitting login page
 		var loginRequest = https.get(loginSetting, loginCallback).on('error', function(err){
 			// Return error if host url is not found
 			context.fail(err);
@@ -81,9 +82,17 @@ exports.handler = function(event, context){
 		var getTokenCallback = function(response){
 			console.log("Sending HTTPS /POST request to " + url + tokenPath + " to get client access token");
 			
+			var status = response.statusCode;
+
+			response.on('error', function(err){
+				context.fail(err);
+			});
+
+			if(status == 401){
+				context.fail("ERR: UNAUTHORIZED ACCESS! CHECK 'Authorization' HEADER");
+			}
 			response.on('data', function(chunk){
 				var token = '';
-				var status = response.statusCode;
 				try{
 					token += JSON.parse(chunk).access_token;
 				}
@@ -96,9 +105,6 @@ exports.handler = function(event, context){
 				else{
 					context.fail(JSON.stringify({status: status, message: "ERR: NO ACCESS TOKEN RETURNED!"}));
 				}
-			});
-			response.on('error', function(err){
-				context.fail(err);
 			});
 		};
 
