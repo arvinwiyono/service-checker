@@ -13,7 +13,7 @@ exports.handler = function(event, context){
 			break;
 
 		case 'access_token':
-			getAccessToken(url);
+			getAccessToken(url, event.resource_id, event.auth);
 			break;
 		default:
 			context.fail("ERR: 'request_type' IS NOT SUPPORTED OR NOT PROVIDED!");
@@ -59,12 +59,12 @@ exports.handler = function(event, context){
 
 // ****************************************************************** //
 	
-	function getAccessToken(url){
+	function getAccessToken(url, resource_id, auth){
 		//Accesss token request setup
 		var tokenPath = '/common/oauth2/token';
 		var messageBody =  querystring.stringify({
 			'grant_type': 'client_credentials',
-			'resource': '00000002-0000-0000-c000-000000000000'
+			'resource': resource_id
 		});
 
 		var getAccessTokenSetting = {
@@ -73,7 +73,7 @@ exports.handler = function(event, context){
 			port: '443',
 			method: 'POST',
 			headers: {
-				'Authorization': 'Basic N2I3NDVlZjktN2RhMS00MDc0LWIzMmEtNzZlNjZhZTJlYzU1OmYyOGQyYTFmLTQ1MDAtNDg3Zi04MDhmLWY2ZDg0MDY0ZTlkZg==',
+				'Authorization': auth,
 				'Content-Type': 'application/x-www-form-urlencoded'
 			}
 		};
