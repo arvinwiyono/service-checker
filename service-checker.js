@@ -61,7 +61,7 @@ exports.handler = function(event, context){
 	
 	function getAccessToken(url, resource_id, auth){
 		//Accesss token request setup
-		var tokenPath = '/common/oauth2/token';
+		var tokenPath = '/oauth2/token';
 		var messageBody =  querystring.stringify({
 			'grant_type': 'client_credentials',
 			'resource': resource_id
