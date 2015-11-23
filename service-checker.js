@@ -1,5 +1,6 @@
 var https = require('follow-redirects').https;
 var querystring = require('querystring');
+var hipchat = require('./hipchat-notification.js');
 
 exports.handler = function(event, context){
 
@@ -40,7 +41,9 @@ exports.handler = function(event, context){
 			 	body += chunk;
 			 	var returned_value = JSON.stringify({status_code: status});
 			 	if(status != 200){
-			 		console.log("ERR: " + loginSetting.host + loginSetting.path + " IS NOT RESPONDING!");
+			 		var msg = "ERR: " + loginSetting.host + loginSetting.path + " IS NOT RESPONDING!";
+			 		console.log(msg);
+			 		hipchat.sendAlert(msg, event.room_id, event.hipchat_auth_token);
 			 		context.fail(returned_value);
 			 	}
 			 	else{
@@ -89,7 +92,10 @@ exports.handler = function(event, context){
 			});
 
 			if(status == 401){
-				context.fail("ERR: UNAUTHORIZED ACCESS! CHECK 'Authorization' HEADER");
+				var msg = "ERR: UNAUTHORIZED ACCESS! CHECK 'Authorization' HEADER";
+				//send hipchat alert
+				hipchat.sendAlert(msg, event.room_id, event.hipchat_auth_token);
+				context.fail(msg);
 			}
 			response.on('data', function(chunk){
 				var token = '';
@@ -103,13 +109,17 @@ exports.handler = function(event, context){
 					context.succeed(JSON.stringify({status: status, access_token: (token.substring(0,20)+"...")}));
 				}
 				else{
-					context.fail(JSON.stringify({status: status, message: "ERR: NO ACCESS TOKEN RETURNED!"}));
+					var msg = JSON.stringify({status: status, message: "ERR: NO ACCESS TOKEN RETURNED!"});
+					//send hipchat alert
+					hipchat.sendAlert(msg, event.room_id, event.hipchat_auth_token);
+					context.fail(msg);
 				}
 			});
 		};
 
 		var getTokenRequest = https.request(getAccessTokenSetting, getTokenCallback).on('error', function(err){
 			// Return error if host url is not found
+			hipchat.sendAlert(err, event.room_id, event.hipchat_auth_token);
 			context.fail(err);
 		});
 
