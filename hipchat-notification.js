@@ -4,7 +4,7 @@ var querystring = require("querystring");
 exports.sendAlert = function(message, room_id, auth_token, callback){
 
 	var messageBody =  querystring.stringify({
-		'message': message,
+		'message': "@all - " + message,
 		'message_format': 'html',
 		'from': 'AWS Lambda',
 		'notify': true,
