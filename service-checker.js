@@ -1,30 +1,33 @@
 var https = require('follow-redirects').https;
 var querystring = require('querystring');
+var fs = require('fs');
 var hipchat = require('./hipchat-notification.js');
 
 exports.handler = function(event, context){
 
+	var config = JSON.parse(fs.readFileSync('./config.json', 'utf8'));
+	
 	var errorCallback = function(message){
 		context.fail(message);
 	};
 
 	var alertHipChat = function(message){
-		hipchat.sendAlert(message, event.room_id, event.hipchat_auth_token, errorCallback);
+		hipchat.sendAlert(message, config.room_id, config.hipchat_auth_token, errorCallback);
 	};
 
 	// Initialize environment to DEV
-	var environment = ((event.env) ? event.env : 'dev');
+	var environment = ((config.env) ? config.env : 'dev');
 	// Define URL
 	var url = environment + '.login.myob.com';
 
-	var requestType = event.request_type;
+	var requestType = config.request_type;
 	switch(requestType){
 		case 'login_page':
 			hitLoginPage(url);
 			break;
 
 		case 'access_token':
-			getAccessToken(url, event.resource_id, event.auth);
+			getAccessToken(url, config.resource_id, config.auth);
 			break;
 		default:
 			context.fail(JSON.stringify({status: 400, message: "ERR: 'request_type' IS NOT SUPPORTED OR NOT PROVIDED!"}));
