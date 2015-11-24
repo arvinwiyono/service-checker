@@ -9,9 +9,9 @@ exports.handler = function(event, context){
 		context.fail(message);
 	}
 	// Initialize environment to DEV
-	var environment = event.env ? event.env, 'dev';
+	var environment = ((event.env) ? event.env : 'dev');
 	// Define URL
-	var url = environment + 'login.myob.com';
+	var url = environment + '.login.myob.com';
 
 	var requestType = event.request_type;
 	switch(requestType){
