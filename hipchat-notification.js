@@ -1,7 +1,7 @@
 var https = require("https");
 var querystring = require("querystring");
 
-exports.sendAlert = function(message, room_id, auth_token){
+exports.sendAlert = function(message, room_id, auth_token, callback){
 
 	var messageBody =  querystring.stringify({
 		'message': message,
@@ -18,12 +18,16 @@ exports.sendAlert = function(message, room_id, auth_token){
 		port: '443',
 		method: 'POST',
 		headers: {
-			'Content-Type': 'application/x-www-form-urlencoded'
+			'Content-Type': 'application/x-www-form-urlencoded',
+			'Content-Length': Buffer.byteLength(messageBody)
 		}
 	};
 
-	var req = https.request(notificationSetting, function(response){
-		console.log(response.statusCode);
+	var req = https.request(notificationSetting, function(res){
+		console.log("Status code: " + res.statusCode);
+		if(res){
+			callback();
+		}
 	}).on('error', function(err){
 		// Return error if host url is not found
 		console.log(err);
