@@ -24,9 +24,9 @@ exports.sendAlert = function(message, room_id, auth_token, callback){
 	};
 
 	var req = https.request(notificationSetting, function(res){
-		console.log("Status code: " + res.statusCode);
 		if(res){
-			callback();
+			console.log("A NOTIFICATION ALERT HAS BEEN SENT TO THE HIPCHAT ROOM!");
+			callback(message);
 		}
 	}).on('error', function(err){
 		// Return error if host url is not found

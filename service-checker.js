@@ -5,7 +5,7 @@ var hipchat = require('./hipchat-notification.js');
 exports.handler = function(event, context){
 
 
-	function errorCallback(message){
+	var errorCallback = function(message){
 		context.fail(message);
 	}
 
@@ -48,7 +48,7 @@ exports.handler = function(event, context){
 			 	if(status != 200){
 			 		var msg = JSON.stringify({status: status, message: "ERR: " + loginSetting.host + loginSetting.path + " IS NOT RESPONDING!"});
 			 		console.log(msg);
-			 		hipchat.sendAlert(msg, event.room_id, event.hipchat_auth_token, errorCallback(msg));
+			 		hipchat.sendAlert(msg, event.room_id, event.hipchat_auth_token, errorCallback);
 			 	}
 			 	else{
 			 		context.succeed(returned_value);
@@ -60,7 +60,7 @@ exports.handler = function(event, context){
 		var loginRequest = https.get(loginSetting, loginCallback).on('error', function(err){
 			console.log("Host is not found!");
 			// Return error if host url is not found
-			hipchat.sendAlert(JSON.stringify({status: 404, message: "ERR: HOST " + url + " IS NOT FOUND!"}), event.room_id, event.hipchat_auth_token, errorCallback(err));
+			hipchat.sendAlert(JSON.stringify({status: 404, message: "ERR: HOST " + url + " IS NOT FOUND!"}), event.room_id, event.hipchat_auth_token, errorCallback);
 		});
 		loginRequest.end();
 	};
@@ -100,7 +100,7 @@ exports.handler = function(event, context){
 				var msg = JSON.stringify({status: 401, message: "ERR: UNAUTHORIZED ACCESS! CHECK 'Authorization' HEADER"});
 				console.log(msg);
 				// Send hipchat alert
-				hipchat.sendAlert(msg, event.room_id, event.hipchat_auth_token, errorCallback(msg));
+				hipchat.sendAlert(msg, event.room_id, event.hipchat_auth_token, errorCallback);
 			}
 			response.on('data', function(chunk){
 				var token = '';
@@ -117,7 +117,7 @@ exports.handler = function(event, context){
 					var msg = JSON.stringify({status: status, message: "ERR: NO ACCESS TOKEN RETURNED!"});
 					console.log(msg);
 					// Send hipchat alert
-					hipchat.sendAlert(msg, event.room_id, event.hipchat_auth_token, errorCallback(msg));
+					hipchat.sendAlert(msg, event.room_id, event.hipchat_auth_token, errorCallback);
 				}
 			});
 		};
@@ -125,7 +125,7 @@ exports.handler = function(event, context){
 		var getTokenRequest = https.request(getAccessTokenSetting, getTokenCallback).on('error', function(err){
 			console.log("Host is not found!");
 			// Return error if host url is not found
-			hipchat.sendAlert(JSON.stringify({status: 404, message: "ERR: HOST " + url + " IS NOT FOUND!"}), event.room_id, event.hipchat_auth_token, errorCallback(err));
+			hipchat.sendAlert(JSON.stringify({status: 404, message: "ERR: HOST " + url + " IS NOT FOUND!"}), event.room_id, event.hipchat_auth_token, errorCallback);
 		});
 
 		getTokenRequest.write(messageBody);
