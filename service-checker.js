@@ -18,7 +18,12 @@ exports.handler = function(event, context){
 	// Initialize environment to DEV
 	var environment = ((config.env) ? config.env : 'dev');
 	// Define URL
-	var url = environment + '.login.myob.com';
+	if (environment == 'prod'){
+		var url = 'login.myob.com';
+	}
+	else{
+		var url = environment + '.login.myob.com';
+	}
 
 	var requestType = config.request_type;
 	switch(requestType){
